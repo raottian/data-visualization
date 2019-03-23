@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,height=device-height">
+    <title>门店入住流程审核</title>
+    <style>::-webkit-scrollbar{display:none;}html,body{overflow:hidden;height:100%;margin:0;}</style>
+</head>
+<body>
+<div id="title" style="text-align: center; font-size:10px;">老人入住节点时间</div>
+<div id="mountNode"></div>
+
+
+<script>/*Fixing iframe window.innerHeight 0 issue in Safari*/
+document.body.clientHeight;</script>
+<script src="https://gw.alipayobjects.com/os/antv/pkg/_antv.g2-3.4.1/dist/g2.min.js"></script>
+<script src="https://gw.alipayobjects.com/os/antv/pkg/_antv.data-set-0.10.1/dist/data-set.min.js"></script>
+<script src="https://gw.alipayobjects.com/os/antv/assets/lib/jquery-3.2.1.min.js"></script>
+<style>
+
+</style>
+<script>
+    var _DataSet = DataSet,
+    DataView = _DataSet.DataView;
+
+    var data ={
+  "name": "",
+  "type":"",
+  "value": "1000",
+  "children":{{ income|safe }}};
+
+    var dv = new DataView();
+    dv.source(data, {
+    type: 'hierarchy'
+    }).transform({
+    type: 'hierarchy.circle-packing'
+    });
+    var height = window.innerHeight
+    var chart = new G2.Chart({
+      container: 'mountNode',
+        width:height+100,
+      height: height,
+      padding: [0,100,0,0]
+    });
+    chart.axis(false);
+    chart.legend({
+        position: 'right-top',//图例位置位于底部，图例项之间距离为20
+        itemGap: 1
+    });
+    chart.legend('r',false);
+    chart.tooltip(true);
+    chart.tooltip({
+        showTitle: false // 不显示默认标题
+    });
+
+    var nodes = dv.getAllNodes().map(function(node) {
+      return {
+        hasChildren: !!(node.data.children && node.data.children.length),
+        name: node.data.name,
+        type: node.data.type,
+        value: node.value,
+        depth: node.depth,
+        x: node.x,
+        y: node.y,
+        r: node.r
+      };
+    });
+
+    chart.source(nodes);
+    chart.scale('name', {
+        alias: '老人姓名'
+    });
+    chart.point().position('x*y').color('hasChildren').shape('circle').tooltip('name').active(false).size('r', function(r) {
+      return r * height;
+    }).color('type',(type)=>{if (type==='') {return 'white'}})
+        .label("name*value",(name,value) =>{if (name=='') {return ''} return name+'  '+value},
+    {offset: 0,
+      textStyle: function textStyle(text, item) {
+        if (item.hasChildren) {
+          return {
+            opacity: 0
+          };
+        }
+        return {
+          textBaseline: 'middle',
+          fill: 'black',
+          fontSize: 10,
+          textAlign: 'center'
+        };
+      }
+    });
+    chart.render();
+</script>
+</body>
+</html>
+
